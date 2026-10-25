@@ -14,12 +14,12 @@ namespace TilemapCreator3D.EditorOnly {
         private const int PREVIEW_TEXTURE_SIZE = 64;
 
         private Tilemap3D Target;
-        private int _targetID;
+        private EntityId _targetID;
 
         private TilePreviewRenderUtility _renderUtility;
 
         private TilemapSettings _settings;
-        
+
         private ToolbarSearchField _searchField;
         private ScrollView _scrollView;
         private ToolbarToggle[] _toggles;
@@ -46,7 +46,7 @@ namespace TilemapCreator3D.EditorOnly {
         public void OnDisable() {
             // Clean up render utility
             if(_renderUtility != null) _renderUtility.Cleanup();
-            
+
             _settings.OnTilePick -= SetToggles;
 
             Selection.selectionChanged -= OnSelectionChanged;
@@ -59,12 +59,12 @@ namespace TilemapCreator3D.EditorOnly {
             bool hasTarget = Target != null;
             bool hasSelection = Selection.activeGameObject != null;
 
-            bool stateChange = (hasTarget != hasSelection) || (hasSelection && _targetID != Selection.activeGameObject.GetInstanceID());
-            
+            bool stateChange = (hasTarget != hasSelection) || (hasSelection && _targetID != Selection.activeGameObject.GetEntityId());
+
             if(stateChange) {
                 if(!hasSelection || !Selection.activeGameObject.TryGetComponent(out Target)) Target = null;
-                else _targetID = Target.gameObject.GetInstanceID();
-                
+                else _targetID = Target.gameObject.GetEntityId();
+
                 RefreshList();
             }
         }
@@ -78,7 +78,7 @@ namespace TilemapCreator3D.EditorOnly {
 
             Toolbar upperBar = new Toolbar();
             upperBar.AddToClassList("tilemap-explorer-toolbar");
-            
+
             _searchField = new ToolbarSearchField();
             _searchField.AddToClassList("tilemap-explorer-searchfield");
             _searchField.RegisterValueChangedCallback(SearchField);
@@ -112,9 +112,9 @@ namespace TilemapCreator3D.EditorOnly {
 
         // Summary
         //      Filter shown tiles by name
-        private void Search(string filter) {  
+        private void Search(string filter) {
             if(_toggles == null) return;
-            
+
             bool emptyString = string.IsNullOrEmpty(filter);
 
             for(int i = 0; i < _toggles.Length; i++) {
@@ -140,7 +140,7 @@ namespace TilemapCreator3D.EditorOnly {
             TilePalette palette = Target.Palette;
 
             Texture2D[] previews = _renderUtility.GetStaticPreviews(Target.Palette, PREVIEW_TEXTURE_SIZE, PREVIEW_TEXTURE_SIZE);
-            
+
             _toggles = new ToolbarToggle[palette.Count];
 
             for(int i = 0; i < palette.Count; i++) {
@@ -184,7 +184,7 @@ namespace TilemapCreator3D.EditorOnly {
                 _toggles[i].SetValueWithoutNotify(id == _settings.Index);
             }
         }
-        
+
 
         // Summary
         //      Drag enters the container window. Will create a temporary drag indicator if dragged object is a tile
@@ -238,7 +238,7 @@ namespace TilemapCreator3D.EditorOnly {
         //      Execute drag. If sucessful insert tile and refresh the map
         private void OnDragPerformEvent(DragPerformEvent ev) {
             if(_dragArea == null || Target == null) return;
-            
+
             DragAndDrop.AcceptDrag();
 
             BaseTile tile = (BaseTile) _dragArea.userData;
@@ -255,7 +255,7 @@ namespace TilemapCreator3D.EditorOnly {
         //      Called upon slider adjustments to change the tiles preview size
         private void ChangePreviewSize(ChangeEvent<float> value) {
             _settings.ExplorerTileSize = value.newValue;
-            
+
             if(_toggles == null) return;
 
             // Cannot acsess custom style so need to set size directly to the elements
@@ -292,7 +292,7 @@ namespace TilemapCreator3D.EditorOnly {
                 SearchService.ShowObjectPicker((Object obj, bool value) => {
                     if(obj != null && Target.Palette.Replace(obj as BaseTile, index)) ApplyToMap();
                 }, null, "", typeof(BaseTile).Name, typeof(BaseTile));
-                
+
             });
             contextMenu.AddItem(new GUIContent("Remove"), false, () => {
                 if(Target.Palette.Delete(index, ref Target.Data)) ApplyToMap();

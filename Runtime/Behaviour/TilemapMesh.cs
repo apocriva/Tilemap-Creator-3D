@@ -10,7 +10,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 
 namespace TilemapCreator3D {
-    public class TilemapMesh : MonoBehaviour, ITilemapModule {    
+    public class TilemapMesh : MonoBehaviour, ITilemapModule {
 
         [System.Serializable]
         private struct ChunkData : System.IDisposable {
@@ -46,8 +46,8 @@ namespace TilemapCreator3D {
         [Tooltip("Size of chunk in grid units. Zero or smaller results in the max of the dimension.")] public int3 ChunkSize = new int3(0, 0, 0);
         [Tooltip("Include attributes in baking process.")] public RawMeshCombineSettings VertexInfo = new RawMeshCombineSettings { Normal = true, UV0 = true };
         [SerializeField] private ChunkData[] _chunks;
-        [SerializeField, HideInInspector] private int _generationID;
-          
+        [SerializeField, HideInInspector] private EntityId _generationID;
+
         // Some cached values to increase consecutive calls
         private Dictionary<Material, int> _materials;
         private int _layer;
@@ -65,9 +65,9 @@ namespace TilemapCreator3D {
                                        (int) math.ceil((float) data.Depth / chunkSize.z));
 
             int chunkLength = chunkCount.x * chunkCount.y * chunkCount.z;
-            
+
             ValidateChunks(chunkLength);
-            
+
             if(_materials == null) _materials = new Dictionary<Material, int>(8);
             _layer = gameObject.layer;
             _isStatic = gameObject.isStatic;
@@ -83,8 +83,8 @@ namespace TilemapCreator3D {
 
                 if(chunk.Overlaps(area)) BakeChunk(_chunks[i], chunk, map);
             }
-        }               
-        
+        }
+
         public void Bake(Tilemap3D map) {
             BakePartial(map, new Box3D(new int3(0, 0, 0), new int3(map.Data.Size)));
         }
@@ -96,7 +96,7 @@ namespace TilemapCreator3D {
 
 
         private void ValidateChunks(int chunkLength) {
-            int instanceID = gameObject.GetInstanceID();
+            EntityId instanceID = gameObject.GetEntityId();
             bool isCopy = _generationID != instanceID;
 
             if(_chunks == null || _chunks.Length != chunkLength || isCopy) {
@@ -119,8 +119,8 @@ namespace TilemapCreator3D {
                     } else if(i >= chunkLength) oldChunks[i].Dispose();
                 }
 
-                _generationID = gameObject.GetInstanceID();
-            } 
+                _generationID = gameObject.GetEntityId();
+            }
         }
 
         private void BakeChunk(ChunkData chunk, Box3D area, Tilemap3D map) {
@@ -179,7 +179,7 @@ namespace TilemapCreator3D {
                 for(int i = 0; i < meshData.Length; i++) {
                     vertTriOffset[i] = new int2(vertexOffset, indexOffset);
 
-                    RawMeshData tmd = meshData[i]; 
+                    RawMeshData tmd = meshData[i];
 
                     if(tmd.SubMeshIndex != subMeshIndex) {
                         subMeshOffset[subMeshIndex] = new int2(subMeshOffset[subMeshIndex].x, subMeshLength);

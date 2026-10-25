@@ -52,8 +52,8 @@ namespace TilemapCreator3D.EditorOnly {
             VisualElement root = new VisualElement();
             root.styleSheets.Add(EditorGUIUtility.Load("Packages/com.fkate.tilemap3d/Editor/Styles/TilemapEditor.uss") as StyleSheet);
 
-            Tilemap3D map = target as Tilemap3D;            
-                        
+            Tilemap3D map = target as Tilemap3D;
+
             Vector3IntField dataSizeField = new Vector3IntField("Map Size");
             dataSizeField.Query<IntegerField>().ForEach((IntegerField field) => field.isDelayed = true);
             dataSizeField.SetValueWithoutNotify(new Vector3Int(map.Data.Width, map.Data.Height, map.Data.Depth));
@@ -91,7 +91,7 @@ namespace TilemapCreator3D.EditorOnly {
             moduleAddButton.RemoveFromClassList("unity-button");
             moduleAddButton.style.borderLeftWidth = 0;
             moduleAddButton.style.borderBottomLeftRadius = 0;
-           
+
             Image addImage = new Image();
             addImage.image = EditorGUIUtility.Load("Packages/com.fkate.tilemap3d/Editor/Icons/Module.Add.png") as Texture2D;
             moduleAddButton.Add(addImage);
@@ -141,7 +141,7 @@ namespace TilemapCreator3D.EditorOnly {
                     elements[i].Add(nameLabel);
 
                     _moduleList.Add(elements[i]);
-                }            
+                }
             } else {
                 Label emptyLabel = new Label("No modules found. Start by adding a mesh module.");
                 emptyLabel.AddToClassList("tilemap-editor-modules-empty");
@@ -166,12 +166,12 @@ namespace TilemapCreator3D.EditorOnly {
             foreach(System.Type type in _settings.Modules) {
                 if(attatchedTypes.Contains(type)) {
                     menu.AddDisabledItem(new GUIContent(type.Name));
-                } else {                    
+                } else {
                     menu.AddItem(new GUIContent(type.Name), false, (object obj) => {
                         // Create new sub gameobject with the module and select it
                         System.Type t = obj as System.Type;
                         Transform parent = (target as Tilemap3D).transform;
-                   
+
                         GameObject go = new GameObject(t.Name, t);
                         Transform trs = go.transform;
                         trs.SetParent(parent);
@@ -187,11 +187,11 @@ namespace TilemapCreator3D.EditorOnly {
                     }, type);
                 }
             }
-            
+
             menu.ShowAsContext();
         }
 
-        
+
         // Context menu for processing modules (mostly for baking)
         private void ProcessModuleMenu() {
             GenericMenu menu = new GenericMenu();
@@ -223,7 +223,7 @@ namespace TilemapCreator3D.EditorOnly {
         private void PerModuleMenu(ClickEvent ev) {
             VisualElement ve = ev.currentTarget as VisualElement;
             int id = (int) ve.userData;
-            
+
             if(id >= 0 && id < _map.Modules.Count) {
                 ITilemapModule module = _map.Modules[id];
 
@@ -232,7 +232,7 @@ namespace TilemapCreator3D.EditorOnly {
                 menu.AddItem(new GUIContent("Select"), false, () => {
                     Selection.activeGameObject = (module as Behaviour).gameObject;
                 });
-                        
+
                 menu.AddItem(new GUIContent("Bake"), false, () => {
                     module.Bake(_map);
                     SaveChanges();
@@ -272,24 +272,24 @@ namespace TilemapCreator3D.EditorOnly {
                 _map.GridSize = ev.newValue;
 
                 SaveChanges();
-            }   
+            }
         }
 
 
-        private void OnMapSizeChange(ChangeEvent<Vector3Int> ev) {           
+        private void OnMapSizeChange(ChangeEvent<Vector3Int> ev) {
             if(ev.newValue.x != _map.Data.Width ||ev.newValue.y != _map.Data.Height || ev.newValue.z != _map.Data.Depth) {
                 _map.Data.Resize(ev.newValue.x, ev.newValue.y, ev.newValue.z);
                 _map.BakeDynamic();
 
                 SaveChanges();
-            }   
+            }
         }
 
 
         private void OnUndoRedo() {
             (target as Tilemap3D).BakeDynamic();
         }
-                
+
 
         public void OnSceneGUI() {
             _settings.SyncToMap(_map);
@@ -311,7 +311,7 @@ namespace TilemapCreator3D.EditorOnly {
 
                     if(reference != null && reference.scene.name == null && PrefabUtility.IsPartOfAnyPrefab(reference)) {
                         // Find internal drag object
-                        IEnumerable<GameObject> objects = FindObjectsOfType<GameObject>().Where(obj => obj.name == reference.name && obj.hideFlags == HideFlags.HideInHierarchy);
+                        IEnumerable<GameObject> objects = FindObjectsByType<GameObject>().Where(obj => obj.name == reference.name && obj.hideFlags == HideFlags.HideInHierarchy);
 
                         if(objects.Count() > 0) _dragCorountine = EditorCoroutineUtility.StartCoroutine(DragEnumerator(objects.First()), _map);
 
@@ -332,7 +332,7 @@ namespace TilemapCreator3D.EditorOnly {
 
 
         // Overwrite internal drag objects position
-        private IEnumerator DragEnumerator(GameObject target) {           
+        private IEnumerator DragEnumerator(GameObject target) {
             Transform trs = target.transform;
 
             while(target != null && target.hideFlags == HideFlags.HideInHierarchy) {
@@ -358,7 +358,7 @@ namespace TilemapCreator3D.EditorOnly {
 
 
         // Push changes to hierachy
-        private void SaveChanges() => EditorUtility.SetDirty(_map);
+        public override void SaveChanges() => EditorUtility.SetDirty(_map);
 
     }
 }
